@@ -27,11 +27,13 @@ void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
   if (mode == MODE_READ) {
     memcpy(data, (DRAM+address), BLOCK_SIZE);
     time += DRAM_READ_TIME;
+    return;
   }
 
   if (mode == MODE_WRITE) {
     memcpy((DRAM+address), data, BLOCK_SIZE);
     time += DRAM_WRITE_TIME;
+    return;
   }
 }
 
@@ -42,7 +44,6 @@ void initCache() { L1Cache.init = 0; }
 void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   CacheLine* lines = L1Cache.lines;
 
-  /* init cache */
   if (!L1Cache.init) {
     for (int i = 0; i < sizeof(lines); i++) {
       lines[i].valid = 0;
@@ -53,7 +54,7 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
     bits_index = log2(sizeof(lines));
     bits_tag = log2(ADDRESS_SIZE) - bits_index - bits_offset;
 
-    mask_offset  = BLOCK_SIZE - 1;
+    mask_offset  = (BLOCK_SIZE - 1);
     mask_index = (sizeof(lines) - 1) << bits_offset;
     mask_tag = (ADDRESS_SIZE - 1) ^ (mask_offset) ^ (mask_index);
     L1Cache.init = 1;
@@ -63,10 +64,7 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   uint32_t index = parse_index(address);
   uint32_t tag = filter_tag(address);
 
-
   lines += index;
-
-  /* access Cache*/
 
   if (!lines->valid || lines->tag != tag) {
     uint32_t memAddress = (address >> bits_offset) << bits_offset;
