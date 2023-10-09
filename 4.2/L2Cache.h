@@ -1,5 +1,5 @@
-#ifndef _L1CACHE_H_
-#define _L1CACHE_H_
+#ifndef _L2CACHE_H_
+#define _L2CACHE_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +17,7 @@ void accessDRAM(uint32_t, uint8_t *, uint32_t);
 /*********************** Cache *************************/
 
 void initCache();
+void accessL2(uint32_t, uint8_t *, uint32_t);
 void accessL1(uint32_t, uint8_t *, uint32_t);
 
 typedef struct CacheLine {
@@ -27,7 +28,7 @@ typedef struct CacheLine {
 } CacheLine;
 
 typedef struct Cache {
-  CacheLine lines[L1_SIZE / BLOCK_SIZE];
+  CacheLine* lines;
   uint32_t init;
 } Cache;
 
