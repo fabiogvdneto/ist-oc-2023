@@ -76,7 +76,7 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
       accessDRAM(memAddress, lines->data, MODE_WRITE);
     }
 
-    memcpy(lines, tempBlock, BLOCK_SIZE);
+    memcpy(lines->data, tempBlock, BLOCK_SIZE);
     lines->valid = 1;
     lines->dirty = 0;
     lines->tag = tag;
