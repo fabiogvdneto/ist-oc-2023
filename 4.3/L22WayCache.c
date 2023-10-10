@@ -44,11 +44,23 @@ uint8_t lru(CacheLine* line) {
   return (line->valid < (line+1)->valid) ? 0 : 1;
 }
 
-int find(CacheLine* lines, uint32_t tag) {
-  for (int i = 0; i < 2; i++) {
-    if (lines[i].valid && (lines[i].tag == tag)) {
-      return i;
+int8_t find(CacheLine* lines, uint32_t tag) {
+  if (lines[0].valid && lines[0].tag == tag) {
+    if (lines[1].valid) {
+      lines[1].valid = 1;
     }
+
+    lines[0].valid = 2;
+    return 0;
+  }
+
+  if (lines[1].valid && lines[1].tag == tag) {
+    if (lines[0].valid) {
+      lines[0].valid = 1;
+    }
+
+    lines[1].valid = 2;
+    return 1;
   }
 
   return -1;
@@ -66,43 +78,39 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
 
   CacheLine* lines = cacheL2.lines + index;
 
-  int iset = find(lines, tag); // iset = index set
+  int8_t way = find(lines, tag); // iset = index set
 
   // Make sure data block is present in cache L2. If not, fetch block from RAM.
-  if (iset == -1) {
-    iset = lru(lines);
+  if (way == -1) {
+    way = lru(lines);
 
     uint32_t memAddress = (address >> L2_OFFSET_BITS) << L2_OFFSET_BITS;
     uint8_t tempBlock[BLOCK_SIZE];
 
     accessDRAM(memAddress, tempBlock, MODE_READ);
 
-    if ((lines[iset].valid) && (lines[iset].dirty)) {
-      memAddress = (lines[iset].tag << (L2_INDEX_BITS + L2_OFFSET_BITS)) | (index << L2_OFFSET_BITS);
-      accessDRAM(memAddress, lines[iset].data, MODE_WRITE);
+    if ((lines[way].valid) && (lines[way].dirty)) {
+      memAddress = (lines[way].tag << (L2_INDEX_BITS + L2_OFFSET_BITS)) | (index << L2_OFFSET_BITS);
+      accessDRAM(memAddress, lines[way].data, MODE_WRITE);
     }
 
-    memcpy((lines+iset), tempBlock, BLOCK_SIZE);
-    lines[iset].valid = 1;
-    lines[iset].dirty = 0;
-    lines[iset].tag = tag;
+    memcpy(lines[way].data, tempBlock, BLOCK_SIZE);
+    lines[way].valid = 1;
+    lines[way].dirty = 0;
+    lines[way].tag = tag;
   }
 
   if (mode == MODE_READ) {
-    memcpy(data, (lines[iset].data+offset), WORD_SIZE);
+    memcpy(data, (lines[way].data+offset), WORD_SIZE);
     time += L2_READ_TIME;
+    return;
   }
 
-  else if (mode == MODE_WRITE) {
-    memcpy((lines[iset].data+offset), data, WORD_SIZE);
+  if (mode == MODE_WRITE) {
+    memcpy((lines[way].data+offset), data, WORD_SIZE);
     time += L2_WRITE_TIME;
-    lines[iset].dirty = 1;
-  }
-
-  lines[iset].valid = 2;
-
-  if (lines[iset*(-1)+1].valid) {
-    lines[iset*(-1)+1].valid = 1;
+    lines[way].dirty = 1;
+    return;
   }
 }
 
