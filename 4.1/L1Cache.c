@@ -72,6 +72,7 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
     accessDRAM(memAddress, tempBlock, MODE_READ);
 
     if ((lines->valid) && (lines->dirty)) {
+      memAddress = (lines->tag << (L1_INDEX_BITS + L1_OFFSET_BITS)) | (index << L1_OFFSET_BITS);
       accessDRAM(memAddress, lines->data, MODE_WRITE);
     }
 
