@@ -1,5 +1,4 @@
 #include "L1Cache.h"
-#include <math.h>
 
 Cache L1Cache;
 uint8_t DRAM[DRAM_SIZE];
