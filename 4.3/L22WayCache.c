@@ -44,22 +44,22 @@ uint8_t lru(CacheLine* line) {
   return (line->valid < (line+1)->valid) ? 0 : 1;
 }
 
-int8_t find(CacheLine* lines, uint32_t tag) {
-  if (lines[0].valid && lines[0].tag == tag) {
-    if (lines[1].valid) {
-      lines[1].valid = 1;
+int8_t find(CacheLine* set, uint32_t tag) {
+  if (set[0].valid && set[0].tag == tag) {
+    if (set[1].valid) {
+      set[1].valid = 1;
     }
 
-    lines[0].valid = 2;
+    set[0].valid = 2;
     return 0;
   }
 
-  if (lines[1].valid && lines[1].tag == tag) {
-    if (lines[0].valid) {
-      lines[0].valid = 1;
+  if (set[1].valid && set[1].tag == tag) {
+    if (set[0].valid) {
+      set[0].valid = 1;
     }
 
-    lines[1].valid = 2;
+    set[1].valid = 2;
     return 1;
   }
 
@@ -73,43 +73,43 @@ void initCache() {
 
 void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
   uint32_t offset = (address % BLOCK_SIZE);
-  uint32_t index = (address >> L2_2WAY_OFFSET_BITS) % (L2_LINE_COUNT / 2) * 2;
-  uint32_t tag = (address >> (L2_2WAY_INDEX_BITS + L2_2WAY_OFFSET_BITS));
+  uint32_t index = (address / BLOCK_SIZE) % (L2_LINE_COUNT/2);
+  uint32_t tag = (address / (BLOCK_SIZE * L2_LINE_COUNT/2));
 
-  CacheLine* lines = cacheL2.lines + index;
+  CacheLine* set = cacheL2.lines + index * 2;
 
-  int8_t way = find(lines, tag); // iset = index set
+  int8_t way = find(set, tag);
 
   // Make sure data block is present in cache L2. If not, fetch block from RAM.
   if (way == -1) {
-    way = lru(lines);
+    way = lru(set);
 
-    uint32_t memAddress = (address >> L2_OFFSET_BITS) << L2_OFFSET_BITS;
+    uint32_t memAddress = (address / BLOCK_SIZE) * BLOCK_SIZE;
     uint8_t tempBlock[BLOCK_SIZE];
 
     accessDRAM(memAddress, tempBlock, MODE_READ);
 
-    if ((lines[way].valid) && (lines[way].dirty)) {
-      memAddress = (lines[way].tag << (L2_INDEX_BITS + L2_OFFSET_BITS)) | (index << L2_OFFSET_BITS);
-      accessDRAM(memAddress, lines[way].data, MODE_WRITE);
+    if ((set[way].valid) && (set[way].dirty)) {
+      memAddress = (set[way].tag * BLOCK_SIZE * L2_LINE_COUNT/2) | (index * BLOCK_SIZE);
+      accessDRAM(memAddress, set[way].data, MODE_WRITE);
     }
 
-    memcpy(lines[way].data, tempBlock, BLOCK_SIZE);
-    lines[way].valid = 1;
-    lines[way].dirty = 0;
-    lines[way].tag = tag;
+    memcpy(set[way].data, tempBlock, BLOCK_SIZE);
+    set[way].valid = 1;
+    set[way].dirty = 0;
+    set[way].tag = tag;
   }
 
   if (mode == MODE_READ) {
-    memcpy(data, (lines[way].data+offset), WORD_SIZE);
+    memcpy(data, (set[way].data+offset), WORD_SIZE);
     time += L2_READ_TIME;
     return;
   }
 
   if (mode == MODE_WRITE) {
-    memcpy((lines[way].data+offset), data, WORD_SIZE);
+    memcpy((set[way].data+offset), data, WORD_SIZE);
     time += L2_WRITE_TIME;
-    lines[way].dirty = 1;
+    set[way].dirty = 1;
     return;
   }
 }
@@ -134,8 +134,8 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   }
   
   uint32_t offset = (address % BLOCK_SIZE);
-  uint32_t index = (address >> L1_OFFSET_BITS) % L1_LINE_COUNT;
-  uint32_t tag = (address >> (L1_INDEX_BITS + L1_OFFSET_BITS));
+  uint32_t index = (address / BLOCK_SIZE) % (L1_LINE_COUNT);
+  uint32_t tag = (address / (BLOCK_SIZE * L1_LINE_COUNT));
 
   CacheLine* line = cacheL1.lines + index;
 

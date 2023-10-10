@@ -4,17 +4,6 @@
 #define L1_LINE_COUNT 256
 #define L2_LINE_COUNT 512
 
-#define L1_OFFSET_BITS 6
-#define L2_OFFSET_BITS 6
-#define L1_INDEX_BITS 8
-#define L2_INDEX_BITS 9
-#define L1_TAG_BITS 18
-#define L2_TAG_BITS 17
-
-#define L2_2WAY_OFFSET_BITS 6
-#define L2_2WAY_INDEX_BITS 8
-#define L2_2WAY_TAG_BITS 18
-
 #define ADDRESS_SIZE 4 // in bytes
 
 #define WORD_SIZE 4                   // in bytes, i.e 32 bit words

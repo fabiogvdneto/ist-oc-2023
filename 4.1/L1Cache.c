@@ -55,8 +55,8 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   }
   
   uint32_t offset = (address % BLOCK_SIZE);
-  uint32_t index = (address >> L1_OFFSET_BITS) % L1_LINE_COUNT;
-  uint32_t tag = (address >> (L1_INDEX_BITS + L1_OFFSET_BITS));
+  uint32_t index = (address / BLOCK_SIZE) % (L1_LINE_COUNT);
+  uint32_t tag = (address / (BLOCK_SIZE * L1_LINE_COUNT));
 
   lines += index;
   
@@ -72,7 +72,7 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
     accessDRAM(memAddress, tempBlock, MODE_READ);
 
     if ((lines->valid) && (lines->dirty)) {
-      memAddress = (lines->tag << (L1_INDEX_BITS + L1_OFFSET_BITS)) | (index << L1_OFFSET_BITS);
+      memAddress = (lines->tag * BLOCK_SIZE * L1_LINE_COUNT) | (index * BLOCK_SIZE);
       accessDRAM(memAddress, lines->data, MODE_WRITE);
     }
 

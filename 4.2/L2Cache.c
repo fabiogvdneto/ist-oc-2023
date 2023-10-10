@@ -47,20 +47,20 @@ void initCache() {
 
 void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
   uint32_t offset = (address % BLOCK_SIZE);
-  uint32_t index = (address >> L2_OFFSET_BITS) % L2_LINE_COUNT;
-  uint32_t tag = (address >> (L2_INDEX_BITS + L2_OFFSET_BITS));
+  uint32_t index = (address / BLOCK_SIZE) % (L2_LINE_COUNT);
+  uint32_t tag = (address / (BLOCK_SIZE * L2_LINE_COUNT));
 
   CacheLine* line = cacheL2.lines + index;
 
   // Make sure data block is present in cache L2. If not, fetch block from RAM.
   if (!line->valid || line->tag != tag) {
-    uint32_t memAddress = (address >> L2_OFFSET_BITS) << L2_OFFSET_BITS;
+    uint32_t memAddress = (address / BLOCK_SIZE) * BLOCK_SIZE;
     uint8_t tempBlock[BLOCK_SIZE];
 
     accessDRAM(memAddress, tempBlock, MODE_READ);
 
     if ((line->valid) && (line->dirty)) {
-      memAddress = (line->tag << (L2_INDEX_BITS + L2_OFFSET_BITS)) | (index << L2_OFFSET_BITS);
+      memAddress = (line->tag * BLOCK_SIZE * L2_LINE_COUNT) | (index * BLOCK_SIZE);
       accessDRAM(memAddress, line->data, MODE_WRITE);
     }
 
@@ -104,8 +104,8 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   }
   
   uint32_t offset = (address % BLOCK_SIZE);
-  uint32_t index = (address >> L1_OFFSET_BITS) % L1_LINE_COUNT;
-  uint32_t tag = (address >> (L1_INDEX_BITS + L1_OFFSET_BITS));
+  uint32_t index = (address / BLOCK_SIZE) % (L1_LINE_COUNT);
+  uint32_t tag = (address / (BLOCK_SIZE * L1_LINE_COUNT));
 
   CacheLine* line = cacheL1.lines + index;
 
