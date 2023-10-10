@@ -1,4 +1,4 @@
-#include "SimpleCache.h"
+#include "../4.1/L1Cache.h"
 
 int main() {
 
@@ -6,6 +6,7 @@ int main() {
   srand(0);
 
   int clock1, value;
+
 
   for(int n = WORD_SIZE; n <= (DRAM_SIZE/4); n*=2) {
 
