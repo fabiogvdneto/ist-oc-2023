@@ -85,8 +85,8 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
 
     for (int i = 0; i < L1_LINE_COUNT; i++) {
       cacheL1.lines[i].valid = 0;
-      cacheL2.lines[i].valid = 0;
       cacheL1.lines[i].dirty = 0;
+      cacheL2.lines[i].valid = 0;
       cacheL2.lines[i].dirty = 0;
     }
 

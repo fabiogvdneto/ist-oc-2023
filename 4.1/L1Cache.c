@@ -47,7 +47,7 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
 
   // Make sure cache is already initialized. If not, initialize first.
   if (!L1Cache.init) {
-    for (int i = 0; i < L1_SIZE/BLOCK_SIZE; i++) {
+    for (int i = 0; i < L1_LINE_COUNT; i++) {
       lines[i].valid = 0;
     }
 
