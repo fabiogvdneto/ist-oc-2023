@@ -74,7 +74,7 @@ void initCache() {
 void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
   uint32_t offset = (address % BLOCK_SIZE);
   uint32_t index = (address / BLOCK_SIZE) % (L2_LINE_COUNT/2);
-  uint32_t tag = (address / (BLOCK_SIZE * L2_LINE_COUNT/2));
+  uint32_t tag = (address / (L2_SIZE/2));
 
   CacheLine* set = cacheL2.lines + index * 2;
 
@@ -90,7 +90,7 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
     accessDRAM(memAddress, tempBlock, MODE_READ);
 
     if ((set[way].valid) && (set[way].dirty)) {
-      memAddress = (set[way].tag * BLOCK_SIZE * L2_LINE_COUNT/2) | (index * BLOCK_SIZE);
+      memAddress = (set[way].tag * L2_SIZE/2) | (index * BLOCK_SIZE);
       accessDRAM(memAddress, set[way].data, MODE_WRITE);
     }
 
@@ -135,7 +135,7 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   
   uint32_t offset = (address % BLOCK_SIZE);
   uint32_t index = (address / BLOCK_SIZE) % (L1_LINE_COUNT);
-  uint32_t tag = (address / (BLOCK_SIZE * L1_LINE_COUNT));
+  uint32_t tag = (address / L1_SIZE);
 
   CacheLine* line = cacheL1.lines + index;
 
