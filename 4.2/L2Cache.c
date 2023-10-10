@@ -46,64 +46,60 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
 void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   // Make sure cache is already initialized. If not, initialize first.
   if (!cacheL1.init) {
-    cacheL1.lines = (CacheLine*) calloc(L1_SIZE / BLOCK_SIZE, sizeof(CacheLine));
-    cacheL2.lines = (CacheLine*) calloc(L2_SIZE / BLOCK_SIZE, sizeof(CacheLine));
+    cacheL1.lines = (CacheLine*) calloc(L1_LINE_COUNT, sizeof(CacheLine));
+    cacheL2.lines = (CacheLine*) calloc(L2_LINE_COUNT, sizeof(CacheLine));
 
-    for (int i = 0; i < sizeof(cacheL1.lines); i++) {
+    for (int i = 0; i < L1_LINE_COUNT; i++) {
       cacheL1.lines[i].valid = 0;
+      cacheL2.lines[i].valid = 0;
+      cacheL1.lines[i].dirty = 0;
+      cacheL2.lines[i].dirty = 0;
+    }
+
+    for (int i = L1_LINE_COUNT; i < L2_LINE_COUNT; i++) {
+      cacheL2.lines[i].valid = 0;
+      cacheL2.lines[i].dirty = 0;
     }
     
     cacheL1.init = 1;
     cacheL2.init = 1;
   }
   
-  uint32_t offset = (parse_offset(address) >> bits_word) * WORD_SIZE;
-  uint32_t index = parse_index(address);
-  uint32_t tag = filter_tag(address);
+  uint32_t offset = (address % BLOCK_SIZE);
+  uint32_t index = (address >> L1_OFFSET_BITS) % L1_LINE_COUNT;
+  uint32_t tag = (address >> (L1_INDEX_BITS + L1_OFFSET_BITS));
 
-  lines += index;
+  CacheLine* line = cacheL1.lines + index;
 
   // Make sure data block is present in cache. If not, fetch block from RAM.
-  if (!lines->valid || lines->tag != tag) {
-    uint32_t memAddress = (address >> bits_offset) << bits_offset;
+  if (!line->valid || line->tag != tag) {
+    uint32_t memAddress = (address >> L1_OFFSET_BITS) << L1_OFFSET_BITS;
     uint8_t tempBlock[BLOCK_SIZE];
 
     accessDRAM(memAddress, tempBlock, MODE_READ);
 
-    if ((lines->valid) && (lines->dirty)) {
-      accessDRAM(memAddress, lines, MODE_WRITE);
+    if ((line->valid) && (line->dirty)) {
+      accessDRAM(memAddress, line, MODE_WRITE);
     }
 
-    memcpy(lines, tempBlock, BLOCK_SIZE);
-    lines->valid = 1;
-    lines->dirty = 0;
-    lines->tag = tag;
+    memcpy(line, tempBlock, BLOCK_SIZE);
+    line->valid = 1;
+    line->dirty = 0;
+    line->tag = tag;
   }
 
   if (mode == MODE_READ) {
-    memcpy(data, lines->data[offset], WORD_SIZE);
+    memcpy(data, line->data[offset], WORD_SIZE);
     time += L1_READ_TIME;
     return;
   }
 
   if (mode == MODE_WRITE) {
-    memcpy(lines->data[offset], data, WORD_SIZE);
+    memcpy(line->data[offset], data, WORD_SIZE);
     time += L1_WRITE_TIME;
-    lines->dirty = 1;
+    line->dirty = 1;
     return;
   }
-}
-
-int filter_tag(uint32_t address) {
-  return (address & mask_tag);
-}
-
-int parse_index(uint32_t address) {
-  return (address & mask_index) >> bits_offset;
-}
-
-int parse_offset(uint32_t address) {
-  return (address & mask_offset);
 }
 
 void read(uint32_t address, uint8_t *data) {
