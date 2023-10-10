@@ -4,8 +4,6 @@
 #define L1_LINE_COUNT 256
 #define L2_LINE_COUNT 512
 
-#define ADDRESS_SIZE 4 // in bytes
-
 #define WORD_SIZE 4                   // in bytes, i.e 32 bit words
 #define BLOCK_SIZE (16 * WORD_SIZE)   // in bytes
 #define DRAM_SIZE (1024 * BLOCK_SIZE) // in bytes
