@@ -1,32 +1,11 @@
 #include "L1Cache.h"
 #include <math.h>
 
-uint8_t DRAM[DRAM_SIZE];
-// number of bits for word, tag, index and offset.
-uint8_t bits_word;
-uint8_t bits_tag;
-uint8_t bits_index;
-uint8_t bits_offset;
-// mask for tag, index and offset.
-uint32_t mask_tag;
-uint32_t mask_index;
-uint32_t mask_offset;
-uint32_t time;
 Cache L1Cache;
+uint8_t DRAM[DRAM_SIZE];
+uint32_t time;
 
 /**************** Helper functions ****************/
-
-int filter_tag(uint32_t address) {
-  return (address >> (bits_index + bits_offset));
-}
-
-int parse_index(uint32_t address) {
-  return (address & mask_index) >> bits_offset;
-}
-
-int parse_offset(uint32_t address) {
-  return (address & mask_offset);
-}
 
 void read(uint32_t address, uint8_t *data) {
   accessL1(address, data, MODE_READ);
@@ -73,20 +52,12 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
       lines[i].valid = 0;
     }
 
-    bits_word = log2(WORD_SIZE);
-    bits_offset = log2(BLOCK_SIZE);
-    bits_index = log2(L1_SIZE/BLOCK_SIZE);
-    bits_tag = log2(ADDRESS_SIZE) - bits_index - bits_offset;
-
-    mask_offset  = (BLOCK_SIZE - 1);
-    mask_index = ((L1_SIZE/BLOCK_SIZE - 1) << bits_offset);
-    mask_tag = (ADDRESS_SIZE - 1) ^ (mask_offset) ^ (mask_index);
     L1Cache.init = 1;
   }
   
-  uint32_t offset = parse_offset(address);
-  uint32_t index = parse_index(address);
-  uint32_t tag = filter_tag(address);
+  uint32_t offset = (address % BLOCK_SIZE);
+  uint32_t index = (address >> L1_OFFSET_BITS) % L1_LINE_COUNT;
+  uint32_t tag = (address >> (L1_INDEX_BITS + L1_OFFSET_BITS));
 
   lines += index;
   
@@ -96,7 +67,7 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
 
   // Make sure data block is present in cache. If not, fetch block from RAM.
   if (!lines->valid || lines->tag != tag) {
-    uint32_t memAddress = (address >> bits_offset) << bits_offset;
+    uint32_t memAddress = (address >> L1_OFFSET_BITS) << L1_OFFSET_BITS;
     uint8_t tempBlock[BLOCK_SIZE];
 
     accessDRAM(memAddress, tempBlock, MODE_READ);
