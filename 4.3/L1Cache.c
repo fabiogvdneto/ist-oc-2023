@@ -44,7 +44,7 @@ uint8_t lru(CacheLine* line) {
   return (line->valid < (line+1)->valid) ? 0 : 1;
 }
 
-uint8_t find(CacheLine* lines, uint32_t tag) {
+int find(CacheLine* lines, uint32_t tag) {
   for (int i = 0; i < 2; i++) {
     if (lines[i].valid && (lines[i].tag == tag)) {
       return i;
@@ -78,6 +78,7 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
     accessDRAM(memAddress, tempBlock, MODE_READ);
 
     if ((lines[iset].valid) && (lines[iset].dirty)) {
+      memAddress = (lines[iset].tag << (L2_INDEX_BITS + L2_OFFSET_BITS)) | (index << L2_OFFSET_BITS);
       accessDRAM(memAddress, lines[iset].data, MODE_WRITE);
     }
 
