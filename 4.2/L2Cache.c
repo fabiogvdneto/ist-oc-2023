@@ -1,19 +1,23 @@
 #include "L2Cache.h"
 
-// Memory Hierarchy
 Cache cacheL1;
 Cache cacheL2;
 uint8_t DRAM[DRAM_SIZE];
-// Timer
 uint32_t time;
 
 
-/**************** Time Manipulation ***************/
-void resetTime() { time = 0; }
+/* ---- Helper ---- */
 
-uint32_t getTime() { return time; }
+void read(uint32_t address, uint8_t *data) {
+  accessL1(address, data, MODE_READ);
+}
 
-/****************  RAM memory (byte addressable) ***************/
+void write(uint32_t address, uint8_t *data) {
+  accessL1(address, data, MODE_WRITE);
+}
+
+/* ---- RAM ---- */
+
 void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
 
   if (address >= DRAM_SIZE - WORD_SIZE + 1)
@@ -32,7 +36,8 @@ void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
   }
 }
 
-/*********************** L1 cache *************************/
+/* ---- Cache Hierarchy ---- */
+
 
 void initCache() {
   cacheL1.init = 0;
@@ -135,10 +140,9 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   }
 }
 
-void read(uint32_t address, uint8_t *data) {
-  accessL1(address, data, MODE_READ);
-}
 
-void write(uint32_t address, uint8_t *data) {
-  accessL1(address, data, MODE_WRITE);
-}
+/* ---- Timer ---- */
+
+void resetTime() { time = 0; }
+
+uint32_t getTime() { return time; }
