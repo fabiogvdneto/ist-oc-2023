@@ -1,4 +1,4 @@
-#include "L1Cache.h"
+#include "L22WayCache.h"
 
 Cache cacheL1;
 Cache cacheL2;
