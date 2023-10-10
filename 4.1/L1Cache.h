@@ -27,7 +27,7 @@ typedef struct CacheLine {
 } CacheLine;
 
 typedef struct Cache {
-  CacheLine lines[L1_SIZE / BLOCK_SIZE];
+  CacheLine lines[L1_LINE_COUNT];
   uint32_t init;
 } Cache;
 

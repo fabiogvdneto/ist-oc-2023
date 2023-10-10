@@ -1,19 +1,11 @@
-#include "L1Cache.h"
+#include "L2Cache.h"
 
-uint8_t DRAM[DRAM_SIZE];
-// number of bits for word, tag, index and offset.
-uint8_t bits_word;
-uint8_t bits_tag;
-uint8_t bits_index;
-uint8_t bits_offset;
-// mask for tag, index and offset.
-uint32_t mask_tag;
-uint32_t mask_index;
-uint32_t mask_offset;
-uint32_t time;
-// caches
+// Memory Hierarchy
 Cache cacheL1;
 Cache cacheL2;
+uint8_t DRAM[DRAM_SIZE];
+// Timer
+uint32_t time;
 
 
 /**************** Time Manipulation ***************/
@@ -42,33 +34,24 @@ void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
 
 /*********************** L1 cache *************************/
 
-void initCache() { cacheL1.init = 0; cacheL2.init = 0; }
+void initCache() {
+  cacheL1.init = 0;
+  cacheL2.init = 0;
+}
 
 void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
 
 }
 
 void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
-  CacheLine* lines = cacheL1.lines;
-
   // Make sure cache is already initialized. If not, initialize first.
   if (!cacheL1.init) {
-
-    for (int i = 0; i < sizeof(lines); i++) {
-      lines[i].valid = 0;
-    }
-
-    bits_word = log2(WORD_SIZE);
-    bits_offset = log2(BLOCK_SIZE);
-    bits_index = log2(sizeof(lines));
-    bits_tag = log2(ADDRESS_SIZE) - bits_index - bits_offset;
-
-    mask_offset  = (BLOCK_SIZE - 1);
-    mask_index = (sizeof(lines) - 1) << bits_offset;
-    mask_tag = (ADDRESS_SIZE - 1) ^ (mask_offset) ^ (mask_index);
-
     cacheL1.lines = (CacheLine*) calloc(L1_SIZE / BLOCK_SIZE, sizeof(CacheLine));
     cacheL2.lines = (CacheLine*) calloc(L2_SIZE / BLOCK_SIZE, sizeof(CacheLine));
+
+    for (int i = 0; i < sizeof(cacheL1.lines); i++) {
+      cacheL1.lines[i].valid = 0;
+    }
     
     cacheL1.init = 1;
     cacheL2.init = 1;
