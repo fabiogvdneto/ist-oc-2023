@@ -61,7 +61,7 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
     accessDRAM(address-offset, tempBlock, MODE_READ);
 
     if ((line->valid) && (line->dirty)) {
-    if (debug) printf("L2 DIRTY\n");
+      if (debug) printf("L2 DIRTY\n");
       accessDRAM((line->tag * L2_SIZE) + (index * BLOCK_SIZE), line->data, MODE_WRITE);
     }
 

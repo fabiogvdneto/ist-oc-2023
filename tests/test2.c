@@ -83,5 +83,7 @@ int main() {
   read(addr1, pvalue);
   printf("read\t%d\t%u\t%d\n", addr1, value, getTime());
 
+  printL1();
+
   return 0;
 }

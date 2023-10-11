@@ -38,8 +38,4 @@ void read(uint32_t, uint8_t *);
 
 void write(uint32_t, uint8_t *);
 
-void printL1();
-
-void printL2();
-
 #endif

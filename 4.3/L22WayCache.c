@@ -161,32 +161,3 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
 void resetTime() { time = 0; }
 
 uint32_t getTime() { return time; }
-
-
-/* ---- Debugging ---- */
-
-void printL1() {
-  CacheLine* lines = cacheL1.lines;
-
-  printf("L1\n");
-
-  for (int i = 0; i < L1_LINE_COUNT; i++) {
-    if (lines[i].valid) {
-      printf("Addre: %d\n", (lines[i].tag * L1_SIZE + i * BLOCK_SIZE));
-      printf("Value: %u\n", (unsigned int) *lines[i].data);
-    }
-  }
-}
-
-void printL2() {
-  CacheLine* lines = cacheL2.lines;
-
-  printf("L2\n");
-
-  for (int i = 0; i < L2_LINE_COUNT; i++) {
-    if (lines[i].valid) {
-      printf("Addre: %d\n", (lines[i].tag * L2_SIZE + i * BLOCK_SIZE/L2_ASSOCIATIVITY));
-      printf("Value: %u\n", (unsigned int) *lines[i].data);
-    }
-  }
-}
