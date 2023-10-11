@@ -20,16 +20,20 @@ void initCache();
 void accessL2(uint32_t, uint8_t *, uint32_t);
 void accessL1(uint32_t, uint8_t *, uint32_t);
 
-typedef struct CacheLine {
+typedef struct {
   uint8_t data[BLOCK_SIZE];
   uint8_t dirty;
   uint32_t valid;
   uint32_t tag;
 } CacheLine;
 
-typedef struct Cache {
-  CacheLine* lines;
-} Cache;
+typedef struct {
+  CacheLine lines[L1_LINE_COUNT];
+} CacheL1;
+
+typedef struct {
+  CacheLine lines[L2_LINE_COUNT];
+} CacheL2;
 
 /*********************** Interfaces *************************/
 

@@ -1,7 +1,7 @@
 #include "L22WayCache.h"
 
-Cache cacheL1;
-Cache cacheL2;
+CacheL1 cacheL1;
+CacheL2 cacheL2;
 uint8_t DRAM[DRAM_SIZE];
 uint32_t time = 0;
 uint32_t init = 0;
@@ -20,7 +20,6 @@ void write(uint32_t address, uint8_t *data) {
 /* ---- RAM ---- */
 
 void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
-
   if (address >= DRAM_SIZE - WORD_SIZE + 1)
     exit(-1);
 
@@ -45,9 +44,6 @@ void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
 /* ---- Cache Hierarchy ---- */
 
 void initCache() {
-  cacheL1.lines = (CacheLine*) calloc(L1_LINE_COUNT, sizeof(CacheLine));
-  cacheL2.lines = (CacheLine*) calloc(L2_LINE_COUNT, sizeof(CacheLine));
-
   for (int i = 0; i < L1_LINE_COUNT; i++) {
     cacheL1.lines[i].valid = 0;
     cacheL2.lines[i].valid = 0;

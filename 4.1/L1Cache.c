@@ -1,9 +1,9 @@
 #include "L1Cache.h"
 
-Cache L1Cache;
+Cache cache;
 uint8_t DRAM[DRAM_SIZE];
-uint32_t time;
-uint8_t debug = 0;
+uint32_t time = 0;
+uint32_t init = 0;
 
 /**************** Helper functions ****************/
 
@@ -22,7 +22,6 @@ uint32_t getTime() { return time; }
 
 /****************  RAM memory (byte addressable) ***************/
 void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
-
   if (address >= DRAM_SIZE - WORD_SIZE + 1)
     exit(-1);
 
@@ -41,19 +40,16 @@ void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
 
 /*********************** L1 cache *************************/
 
-void initCache() { L1Cache.init = 0; }
+void initCache() {
+  for (int i = 0; i < L1_LINE_COUNT; i++) {
+    cache.lines[i].valid = 0;
+  }
+
+  init = 1;
+}
 
 void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
-  CacheLine* lines = L1Cache.lines;
-
-  // Make sure cache is already initialized. If not, initialize first.
-  if (!L1Cache.init) {
-    for (int i = 0; i < L1_LINE_COUNT; i++) {
-      lines[i].valid = 0;
-    }
-
-    L1Cache.init = 1;
-  }
+  CacheLine* lines = cache.lines;
   
   uint32_t offset = (address % BLOCK_SIZE);
   uint32_t index = (address / BLOCK_SIZE) % (L1_LINE_COUNT);
@@ -65,13 +61,9 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   if (!lines->valid || lines->tag != tag) {
     uint8_t tempBlock[BLOCK_SIZE];
 
-    if (debug) printf("L1 MISS\n");
-
     accessDRAM((address-offset), tempBlock, MODE_READ);
 
     if ((lines->valid) && (lines->dirty)) {
-      if (debug) printf("L1 DIRTY\n");
-
       accessDRAM((lines->tag * L1_SIZE) + (index * BLOCK_SIZE), lines->data, MODE_WRITE);
     }
 

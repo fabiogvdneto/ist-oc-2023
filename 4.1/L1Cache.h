@@ -28,7 +28,6 @@ typedef struct CacheLine {
 
 typedef struct Cache {
   CacheLine lines[L1_LINE_COUNT];
-  uint32_t init;
 } Cache;
 
 /*********************** Interfaces *************************/
