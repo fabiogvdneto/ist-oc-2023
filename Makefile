@@ -33,6 +33,8 @@ diff3:
 	diff tests/4.3.out tests/results_L2_2W.txt
 
 clean:
-	rm tests/L1Cache tests/L2Cache tests/L22WayCache
+	rm tests/L1Cache
+	rm tests/L2Cache
+	rm tests/L22WayCache
 	rm tests/test1 tests/test2 tests/test3
 	rm tests/*.out
