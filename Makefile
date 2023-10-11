@@ -6,7 +6,6 @@ all:
 	$(CC) $(CFLAGS) tests/SimpleProgram.c 4.2/L2Cache.c -o tests/L2Cache
 	$(CC) $(CFLAGS) tests/SimpleProgram.c 4.3/L22WayCache.c -o tests/L22WayCache
 
-
 run:
 	./tests/L1Cache > tests/4.1.out
 	./tests/L2Cache > tests/4.2.out
