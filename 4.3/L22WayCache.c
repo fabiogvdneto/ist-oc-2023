@@ -4,7 +4,6 @@ Cache cacheL1;
 Cache cacheL2;
 uint8_t DRAM[DRAM_SIZE];
 uint32_t time;
-uint8_t debug = 1;
 
 
 /* ---- Helper ---- */
@@ -28,12 +27,16 @@ void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
   if (mode == MODE_READ) {
     memcpy(data, (DRAM+address), BLOCK_SIZE);
     time += DRAM_READ_TIME;
+
+    if (DEBUG) printf("RAM read");
     return;
   }
 
   if (mode == MODE_WRITE) {
     memcpy((DRAM+address), data, BLOCK_SIZE);
     time += DRAM_WRITE_TIME;
+
+    if (DEBUG) printf(", RAM write");
     return;
   }
 }
@@ -60,6 +63,14 @@ int8_t lru(CacheLine* set) {
 }
 
 void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
+  if (DEBUG) {
+    if (mode) {
+      printf("L2 read ");
+    } else {
+      printf("L2 write ");
+    }
+  }
+
   uint32_t offset = (address % BLOCK_SIZE);
   uint32_t index = (address / BLOCK_SIZE) % (L2_LINE_COUNT/L2_ASSOCIATIVITY);
   uint32_t tag = (address / (L2_SIZE/L2_ASSOCIATIVITY));
@@ -67,16 +78,22 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
   CacheLine* set = cacheL2.lines + index * L2_ASSOCIATIVITY;
   int8_t iset = L2_ASSOCIATIVITY;
 
+    if (DEBUG) printf("set=(%d,%d)", set[0].tag, set[1].tag);
+
   // Find block inside the associativity set.
   while (--iset >= 0) {
     if (set[iset].valid && set[iset].tag == tag) break;
   }
+
+  if (DEBUG) printf("(iset=%d) [ ", iset);
 
   // Make sure data block is present in cache L2. If not, fetch block from RAM.
   if (iset == -1) {
     uint8_t tempBlock[BLOCK_SIZE];
 
     iset = lru(set);
+
+    if(DEBUG) printf("(lru=%d) ", iset);
 
     accessDRAM(address-offset, tempBlock, MODE_READ);
 
@@ -91,6 +108,8 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
     set[iset].tag = tag;
   }
 
+  if (DEBUG) printf(" ] ");
+
   if (mode == MODE_READ) {
     memcpy(data, set[iset].data, BLOCK_SIZE);
     time += L2_READ_TIME;
@@ -100,12 +119,19 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
   if (mode == MODE_WRITE) {
     memcpy(set[iset].data, data, BLOCK_SIZE);
     time += L2_WRITE_TIME;
-    set->dirty = 1;
+    set[iset].dirty = 1;
     return;
   }
 }
 
 void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
+  if (DEBUG) {
+    if (mode) {
+      printf("L1 read { ");
+    } else {
+      printf("L1 write { ");
+    }
+  }
 
   // Make sure caches are already initialized. If not, initialize first.
   if (!cacheL1.init) {
@@ -146,6 +172,8 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
     line->dirty = 0;
     line->tag = tag;
   }
+
+  if (DEBUG) printf(" } ");
 
   if (mode == MODE_READ) {
     memcpy(data, (line->data+offset), WORD_SIZE);

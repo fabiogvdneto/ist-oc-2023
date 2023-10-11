@@ -2,11 +2,13 @@
 
 void writef(uint32_t address, uint32_t* value) {
   write(address, (uint8_t*) value);
+  if (DEBUG) printf("\n");
   printf("write\t%d\t%u\t%d\n", address, *value, getTime());
 }
 
 void readf(uint32_t address, uint32_t* value) {
   read(address, (uint8_t*) value);
+  if (DEBUG) printf("\n");
   printf("read\t%d\t%u\t%d\n", address, *value, getTime());
 }
 
@@ -60,7 +62,6 @@ int main() {
 
   writef(addr1, &val1); // 313
   writef(addr2, &val2);
-  readf(addr1, &value);
   writef(addr3, &val3);
 
   readf(addr1, &value);
