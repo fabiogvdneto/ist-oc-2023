@@ -3,8 +3,8 @@
 Cache cacheL1;
 Cache cacheL2;
 uint8_t DRAM[DRAM_SIZE];
-uint32_t time;
-
+uint32_t time = 0;
+uint32_t init = 0;
 
 /* ---- Helper ---- */
 
@@ -45,8 +45,19 @@ void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
 /* ---- Cache Hierarchy ---- */
 
 void initCache() {
-  cacheL1.init = 0;
-  cacheL2.init = 0;
+  cacheL1.lines = (CacheLine*) calloc(L1_LINE_COUNT, sizeof(CacheLine));
+  cacheL2.lines = (CacheLine*) calloc(L2_LINE_COUNT, sizeof(CacheLine));
+
+  for (int i = 0; i < L1_LINE_COUNT; i++) {
+    cacheL1.lines[i].valid = 0;
+    cacheL2.lines[i].valid = 0;
+  }
+
+  for (int i = L1_LINE_COUNT; i < L2_LINE_COUNT; i++) {
+    cacheL2.lines[i].valid = 0;
+  }
+  
+  init = 1;
 }
 
 int8_t lru(CacheLine* set) {
@@ -131,24 +142,6 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
     } else {
       printf("L1 write { ");
     }
-  }
-
-  // Make sure caches are already initialized. If not, initialize first.
-  if (!cacheL1.init) {
-    cacheL1.lines = (CacheLine*) calloc(L1_LINE_COUNT, sizeof(CacheLine));
-    cacheL2.lines = (CacheLine*) calloc(L2_LINE_COUNT, sizeof(CacheLine));
-
-    for (int i = 0; i < L1_LINE_COUNT; i++) {
-      cacheL1.lines[i].valid = 0;
-      cacheL2.lines[i].valid = 0;
-    }
-
-    for (int i = L1_LINE_COUNT; i < L2_LINE_COUNT; i++) {
-      cacheL2.lines[i].valid = 0;
-    }
-    
-    cacheL1.init = 1;
-    cacheL2.init = 1;
   }
   
   uint32_t offset = (address % BLOCK_SIZE);
