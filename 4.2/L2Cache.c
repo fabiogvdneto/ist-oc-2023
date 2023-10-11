@@ -61,7 +61,7 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
 
     if ((line->valid) && (line->dirty)) {
       memAddress = (line->tag * L2_SIZE) | (index * BLOCK_SIZE);
-      accessDRAM(memAddress, line->data, MODE_WRITE);
+      accessDRAM(memAddress, (line->data+offset), MODE_WRITE);
     }
 
     memcpy(line->data, tempBlock, BLOCK_SIZE);
@@ -116,7 +116,7 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
     accessL2(address, tempBlock, MODE_READ);
 
     if ((line->valid) && (line->dirty)) {
-      accessL2(address, line->data, MODE_WRITE);
+      accessL2(address, (line->data+offset), MODE_WRITE);
     }
 
     memcpy(line->data, tempBlock, BLOCK_SIZE);
@@ -126,13 +126,13 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   }
 
   if (mode == MODE_READ) {
-    memcpy(data, &line->data[offset], WORD_SIZE);
+    memcpy(data, (line->data+offset), WORD_SIZE);
     time += L1_READ_TIME;
     return;
   }
 
   if (mode == MODE_WRITE) {
-    memcpy(&line->data[offset], data, WORD_SIZE);
+    memcpy((line->data+offset), data, WORD_SIZE);
     time += L1_WRITE_TIME;
     line->dirty = 1;
     return;
