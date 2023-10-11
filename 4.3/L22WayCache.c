@@ -4,6 +4,7 @@ Cache cacheL1;
 Cache cacheL2;
 uint8_t DRAM[DRAM_SIZE];
 uint32_t time;
+uint8_t debug = 1;
 
 
 /* ---- Helper ---- */
@@ -40,13 +41,22 @@ void accessDRAM(uint32_t address, uint8_t *data, uint32_t mode) {
 
 /* ---- Cache Hierarchy ---- */
 
-uint8_t lru(CacheLine* line) {
-  return (line->valid < (line+1)->valid) ? 0 : 1;
-}
-
 void initCache() {
   cacheL1.init = 0;
   cacheL2.init = 0;
+}
+
+int8_t lru(CacheLine* set) {
+  int min = 0;
+
+  // Find least recently used (LRU) block in the associativity set.
+  for (int i = 1; i < L2_ASSOCIATIVITY; i++) {
+    if (set[i].valid < set[min].valid) {
+      min = i;
+    }
+  }
+
+  return min;
 }
 
 void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
@@ -62,16 +72,11 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
     if (set[iset].valid && set[iset].tag == tag) break;
   }
 
-  // If block was not found, fetch from RAM.
+  // Make sure data block is present in cache L2. If not, fetch block from RAM.
   if (iset == -1) {
     uint8_t tempBlock[BLOCK_SIZE];
 
-    // Find least recently used (LRU) block in the associativity set.
-    for (int i = 1, iset = 0; i < L2_ASSOCIATIVITY; i++) {
-      if (set[i].valid < set[iset].valid) {
-        iset = i;
-      }
-    }
+    iset = lru(set);
 
     accessDRAM(address-offset, tempBlock, MODE_READ);
 
@@ -95,12 +100,13 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
   if (mode == MODE_WRITE) {
     memcpy(set[iset].data, data, BLOCK_SIZE);
     time += L2_WRITE_TIME;
-    set[iset].dirty = 1;
+    set->dirty = 1;
     return;
   }
 }
 
 void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
+
   // Make sure caches are already initialized. If not, initialize first.
   if (!cacheL1.init) {
     cacheL1.lines = (CacheLine*) calloc(L1_LINE_COUNT, sizeof(CacheLine));

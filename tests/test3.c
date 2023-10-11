@@ -1,5 +1,15 @@
 #include "../4.3/L22WayCache.h"
 
+void writef(uint32_t address, uint32_t* value) {
+  write(address, (uint8_t*) value);
+  printf("write\t%d\t%u\t%d\n", address, *value, getTime());
+}
+
+void readf(uint32_t address, uint32_t* value) {
+  read(address, (uint8_t*) value);
+  printf("read\t%d\t%u\t%d\n", address, *value, getTime());
+}
+
 int main() {
   printf("MODE\tADDR\tVALUE\tTIME\n");
   resetTime();
@@ -17,24 +27,13 @@ int main() {
   uint32_t addr2 = 0x108;
   uint32_t addr3 = 0x10C;
 
-  uint8_t* pvalue = (uint8_t*) &value;
-  uint8_t* pval1 = (uint8_t*) &val1;
-  uint8_t* pval2 = (uint8_t*) &val2;
-  uint8_t* pval3 = (uint8_t*) &val3;
+  writef(addr1, &val1); // 111
+  writef(addr2, &val2); // 112
+  writef(addr3, &val3); // 113
 
-  write(addr1, pval1);
-  printf("write\t%d\t%u\t%d\n", addr1, val1, getTime()); // 111
-  write(addr2, pval2);
-  printf("write\t%d\t%u\t%d\n", addr2, val2, getTime()); // 112
-  write(addr3, pval3);
-  printf("write\t%d\t%u\t%d\n", addr3, val3, getTime()); // 113
-
-  read(addr1, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr1, value, getTime()); // 114
-  read(addr2, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr2, value, getTime()); // 115
-  read(addr3, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr3, value, getTime()); // 116
+  readf(addr1, &value); // 114
+  readf(addr2, &value); // 115
+  readf(addr3, &value); // 116
 
   // SECOND ROUND: same as first round, but different index this time.
 
@@ -42,19 +41,13 @@ int main() {
   addr2 = 0x208;
   addr3 = 0x20C;
 
-  write(addr1, pval1);
-  printf("write\t%d\t%u\t%d\n", addr1, val1, getTime()); // 227
-  write(addr2, pval2);
-  printf("write\t%d\t%u\t%d\n", addr2, val2, getTime()); // 228
-  write(addr3, pval3);
-  printf("write\t%d\t%u\t%d\n", addr3, val3, getTime()); // 229
+  writef(addr1, &val1); // 227
+  writef(addr2, &val2); // 228
+  writef(addr3, &val3); // 229
 
-  read(addr1, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr1, value, getTime()); // 230
-  read(addr2, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr2, value, getTime()); // 231
-  read(addr3, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr3, value, getTime()); // 232
+  readf(addr1, &value); // 230
+  readf(addr2, &value); // 231
+  readf(addr3, &value); // 232
 
   printf("\nMODE\tADDR\tVALUE\tTIME\n");
   resetTime();
@@ -65,23 +58,15 @@ int main() {
   addr2 = 0x8000;
   addr3 = 0xC000;
 
-  write(addr1, pval1);
-  printf("write\t%d\t%u\t%d\n", addr1, val1, getTime()); // 313
-  write(addr2, pval2);
-  printf("write\t%d\t%u\t%d\n", addr2, val2, getTime());
-  write(addr3, pval3);
-  printf("write\t%d\t%u\t%d\n", addr3, val3, getTime());
+  writef(addr1, &val1); // 313
+  writef(addr2, &val2);
+  readf(addr1, &value);
+  writef(addr3, &val3);
 
-  read(addr1, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr1, value, getTime());
-  read(addr2, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr2, value, getTime());
-  read(addr3, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr3, value, getTime());
-  read(addr2, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr2, value, getTime());
-  read(addr1, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr1, value, getTime());
+  readf(addr1, &value);
+  readf(addr3, &value);
+  readf(addr2, &value);
+  readf(addr1, &value);
 
   return 0;
 }
