@@ -9,25 +9,25 @@ int main() {
   initCache();
   int value;
 
-  int a = 0;
+  int a = 4;
   write(a, (unsigned char *) (&a));
-  printf("WRITE 0 IN ADDRESS 0; TIME: %d\n", getTime());
+  printf("WRITE %d IN ADDRESS %d; TIME: %d\n", a, a, getTime());
 
   read(a, (unsigned char *) (&value));
-  printf("READ FROM ADDRESS 0 VALUE: %d; TIME: %d\n", value, getTime());
+  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", a, value, getTime());
 
   int b = 32768;
   write(b, (unsigned char *) (&b));
-  printf("WRITE 32768 IN ADDRESS 32768; TIME: %d\n", getTime());
+  printf("WRITE %d IN ADDRESS %d; TIME: %d\n", b, b, getTime());
 
   read(b, (unsigned char *) (&value));
-  printf("READ FROM ADDRESS 32768 VALUE: %d; TIME: %d\n", value, getTime());
+  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", b, value, getTime());
 
   read(a, (unsigned char *) (&value));
-  printf("READ FROM ADDRESS 0 VALUE: %d; TIME: %d\n", value, getTime());
+  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", a, value, getTime());
 
   read(b, (unsigned char *) (&value));
-  printf("READ FROM ADDRESS 32768 VALUE: %d; TIME: %d\n", value, getTime());
+  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", b, value, getTime());
   
   return 0;
 }
