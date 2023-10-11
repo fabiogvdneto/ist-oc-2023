@@ -1,6 +1,8 @@
 #ifndef _CACHE_H_
 #define _CACHE_H_
 
+#define L2_ASSOCIATIVITY 2
+
 #define L1_LINE_COUNT 256
 #define L2_LINE_COUNT 512
 
