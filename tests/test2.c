@@ -1,4 +1,4 @@
-#include "../4.3/L22WayCache.h"
+#include "../4.2/L2Cache.h"
 
 int main() {
 
@@ -8,26 +8,26 @@ int main() {
   resetTime();
   initCache();
   int value;
-  int a = 10;
-  int b = 20;
 
-  write(0, (unsigned char *) (&a));
-  printf("WRITE %d IN ADDRESS 0; TIME: %d\n", a, getTime());
+  int a = 0;
+  write(a, (unsigned char *) (&a));
+  printf("WRITE 0 IN ADDRESS 0; TIME: %d\n", getTime());
 
-  write(1<<14, (unsigned char *) (&b));
-  printf("WRITE %d IN ADDRESS %d; TIME: %d\n", b, 1 << 14, getTime());
-
-  read(0, (unsigned char *) (&value));
+  read(a, (unsigned char *) (&value));
   printf("READ FROM ADDRESS 0 VALUE: %d; TIME: %d\n", value, getTime());
 
-  read(1<<14, (unsigned char *) (&value));
-  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", 1<<14, value, getTime());
+  int b = 32768;
+  write(b, (unsigned char *) (&b));
+  printf("WRITE 32768 IN ADDRESS 32768; TIME: %d\n", getTime());
 
-  read(0, (unsigned char *) (&value));
+  read(b, (unsigned char *) (&value));
+  printf("READ FROM ADDRESS 32768 VALUE: %d; TIME: %d\n", value, getTime());
+
+  read(a, (unsigned char *) (&value));
   printf("READ FROM ADDRESS 0 VALUE: %d; TIME: %d\n", value, getTime());
 
-  read(1<<14, (unsigned char *) (&value));
-  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", 1<<14, value, getTime());
+  read(b, (unsigned char *) (&value));
+  printf("READ FROM ADDRESS 32768 VALUE: %d; TIME: %d\n", value, getTime());
   
   return 0;
 }

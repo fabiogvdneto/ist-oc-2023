@@ -48,7 +48,7 @@ void initCache() {
 void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
   uint32_t offset = (address % BLOCK_SIZE);
   uint32_t index = (address / BLOCK_SIZE) % (L2_LINE_COUNT);
-  uint32_t tag = (address / (L2_SIZE/2));
+  uint32_t tag = (address / L2_SIZE);
 
   CacheLine* line = cacheL2.lines + index;
 
@@ -60,11 +60,11 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
     accessDRAM(memAddress, tempBlock, MODE_READ);
 
     if ((line->valid) && (line->dirty)) {
-      memAddress = (line->tag * L2_SIZE/2) | (index * BLOCK_SIZE);
+      memAddress = (line->tag * L2_SIZE) | (index * BLOCK_SIZE);
       accessDRAM(memAddress, line->data, MODE_WRITE);
     }
 
-    memcpy(line, tempBlock, BLOCK_SIZE);
+    memcpy(line->data, tempBlock, BLOCK_SIZE);
     line->valid = 1;
     line->dirty = 0;
     line->tag = tag;

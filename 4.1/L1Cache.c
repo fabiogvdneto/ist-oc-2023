@@ -59,10 +59,6 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   uint32_t tag = (address / (L1_SIZE));
 
   lines += index;
-  
-  if (0) {
-    printf("%d, %d, %d\n", offset, index, tag);
-  }
 
   // Make sure data block is present in cache. If not, fetch block from RAM.
   if (!lines->valid || lines->tag != tag) {
