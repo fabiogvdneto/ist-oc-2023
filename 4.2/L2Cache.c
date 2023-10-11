@@ -61,7 +61,7 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
 
     if ((line->valid) && (line->dirty)) {
       memAddress = (line->tag * L2_SIZE) | (index * BLOCK_SIZE);
-      accessDRAM(memAddress, (line->data+offset), MODE_WRITE);
+      accessDRAM(memAddress, line->data, MODE_WRITE);
     }
 
     memcpy(line->data, tempBlock, BLOCK_SIZE);

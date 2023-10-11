@@ -91,7 +91,7 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
 
     if ((set[way].valid) && (set[way].dirty)) {
       memAddress = (set[way].tag * L2_SIZE/2) | (index * BLOCK_SIZE);
-      accessDRAM(memAddress, (set[way].data+offset), MODE_WRITE);
+      accessDRAM(memAddress, set[way].data, MODE_WRITE);
     }
 
     memcpy(set[way].data, tempBlock, BLOCK_SIZE);
