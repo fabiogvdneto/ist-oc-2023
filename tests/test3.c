@@ -15,19 +15,19 @@ int main() {
   int b = 20;
 
   write(aaddr, (unsigned char *) (&a));
-  printf("WRITE %d IN ADDRESS 0; TIME: %d\n", a, getTime());
+  printf("WRITE %d IN ADDRESS %d; TIME: %d\n", a, aaddr, getTime());
 
   write(baddr, (unsigned char *) (&b));
   printf("WRITE %d IN ADDRESS %d; TIME: %d\n", b, baddr, getTime());
 
   read(aaddr, (unsigned char *) (&value));
-  printf("READ FROM ADDRESS 0 VALUE: %d; TIME: %d\n", value, getTime());
+  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", aaddr, value, getTime());
 
   read(baddr, (unsigned char *) (&value));
   printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", baddr, value, getTime());
 
   read(aaddr, (unsigned char *) (&value));
-  printf("READ FROM ADDRESS 0 VALUE: %d; TIME: %d\n", value, getTime());
+  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", aaddr, value, getTime());
 
   read(baddr, (unsigned char *) (&value));
   printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", baddr, value, getTime());
