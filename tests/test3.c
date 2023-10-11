@@ -8,26 +8,40 @@ int main() {
   resetTime();
   initCache();
   int value;
+
+  int aaddr = 0;
+  int baddr = 1<<14;
   int a = 10;
   int b = 20;
 
-  write(0, (unsigned char *) (&a));
+  write(aaddr, (unsigned char *) (&a));
   printf("WRITE %d IN ADDRESS 0; TIME: %d\n", a, getTime());
 
-  write(1<<14, (unsigned char *) (&b));
-  printf("WRITE %d IN ADDRESS %d; TIME: %d\n", b, 1 << 14, getTime());
+  write(baddr, (unsigned char *) (&b));
+  printf("WRITE %d IN ADDRESS %d; TIME: %d\n", b, baddr, getTime());
 
-  read(0, (unsigned char *) (&value));
+  read(aaddr, (unsigned char *) (&value));
   printf("READ FROM ADDRESS 0 VALUE: %d; TIME: %d\n", value, getTime());
 
-  read(1<<14, (unsigned char *) (&value));
-  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", 1<<14, value, getTime());
+  read(baddr, (unsigned char *) (&value));
+  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", baddr, value, getTime());
 
-  read(0, (unsigned char *) (&value));
+  read(aaddr, (unsigned char *) (&value));
   printf("READ FROM ADDRESS 0 VALUE: %d; TIME: %d\n", value, getTime());
 
-  read(1<<14, (unsigned char *) (&value));
-  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", 1<<14, value, getTime());
+  read(baddr, (unsigned char *) (&value));
+  printf("READ FROM ADDRESS %d VALUE: %d; TIME: %d\n", baddr, value, getTime());
+
+  int c = 30;
+
+  write(0x3, (unsigned char *) &c);
+  write(0x1, (unsigned char *) &b);
+
+  read(0x1, (unsigned char *) (&value));
+  printf("READ FROM ADDRESS 0x1 VALUE: %d; TIME: %d\n", value, getTime());
+
+  printL1();
+  printL2();
   
   return 0;
 }

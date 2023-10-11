@@ -62,14 +62,12 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
 
   // Make sure data block is present in cache. If not, fetch block from RAM.
   if (!lines->valid || lines->tag != tag) {
-    uint32_t memAddress = (address / BLOCK_SIZE) * BLOCK_SIZE;
     uint8_t tempBlock[BLOCK_SIZE];
 
-    accessDRAM(memAddress, tempBlock, MODE_READ);
+    accessDRAM((address-offset), tempBlock, MODE_READ);
 
     if ((lines->valid) && (lines->dirty)) {
-      memAddress = (lines->tag * L1_SIZE) | (index * BLOCK_SIZE);
-      accessDRAM(memAddress, lines->data, MODE_WRITE);
+      accessDRAM((lines->tag * L1_SIZE) + (index * BLOCK_SIZE), lines->data, MODE_WRITE);
     }
 
     memcpy(lines->data, tempBlock, BLOCK_SIZE);
@@ -89,5 +87,21 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
     time += L1_WRITE_TIME;
     lines->dirty = 1;
     return;
+  }
+}
+
+
+/* ---- Debugging ---- */
+
+void printL1() {
+  CacheLine* lines = L1Cache.lines;
+
+  printf("L1\n");
+
+  for (int i = 0; i < L1_LINE_COUNT; i++) {
+    if (lines[i].valid) {
+      printf("Addre: %d\n", (lines[i].tag * L1_SIZE + i * BLOCK_SIZE));
+      printf("Value: %u\n", (unsigned int) *lines[i].data);
+    }
   }
 }

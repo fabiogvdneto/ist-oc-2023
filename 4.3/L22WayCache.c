@@ -44,28 +44,6 @@ uint8_t lru(CacheLine* line) {
   return (line->valid < (line+1)->valid) ? 0 : 1;
 }
 
-int8_t find(CacheLine* set, uint32_t tag) {
-  if (set[0].valid && set[0].tag == tag) {
-    if (set[1].valid) {
-      set[1].valid = 1;
-    }
-
-    set[0].valid = 2;
-    return 0;
-  }
-
-  if (set[1].valid && set[1].tag == tag) {
-    if (set[0].valid) {
-      set[0].valid = 1;
-    }
-
-    set[1].valid = 2;
-    return 1;
-  }
-
-  return -1;
-}
-
 void initCache() {
   cacheL1.init = 0;
   cacheL2.init = 0;
@@ -73,43 +51,51 @@ void initCache() {
 
 void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
   uint32_t offset = (address % BLOCK_SIZE);
-  uint32_t index = (address / BLOCK_SIZE) % (L2_LINE_COUNT/2);
-  uint32_t tag = (address / (L2_SIZE/2));
+  uint32_t index = (address / BLOCK_SIZE) % (L2_LINE_COUNT/L2_ASSOCIATIVITY);
+  uint32_t tag = (address / (L2_SIZE/L2_ASSOCIATIVITY));
 
-  CacheLine* set = cacheL2.lines + index * 2;
+  CacheLine* set = cacheL2.lines + index * L2_ASSOCIATIVITY;
+  int8_t iset = L2_ASSOCIATIVITY;
 
-  int8_t way = find(set, tag);
+  // Find block inside the associativity set.
+  while (--iset >= 0) {
+    if (set[iset].valid && set[iset].tag == tag) break;
+  }
 
-  // Make sure data block is present in cache L2. If not, fetch block from RAM.
-  if (way == -1) {
-    way = lru(set);
-
-    uint32_t memAddress = (address / BLOCK_SIZE) * BLOCK_SIZE;
+  // If block was not found, fetch from RAM.
+  if (iset == -1) {
     uint8_t tempBlock[BLOCK_SIZE];
 
-    accessDRAM(memAddress, tempBlock, MODE_READ);
-
-    if ((set[way].valid) && (set[way].dirty)) {
-      memAddress = (set[way].tag * L2_SIZE/2) | (index * BLOCK_SIZE);
-      accessDRAM(memAddress, set[way].data, MODE_WRITE);
+    // Find least recently used (LRU) block in the associativity set.
+    for (int i = 1, iset = 0; i < L2_ASSOCIATIVITY; i++) {
+      if (set[i].valid < set[iset].valid) {
+        iset = i;
+      }
     }
 
-    memcpy(set[way].data, tempBlock, BLOCK_SIZE);
-    set[way].valid = 1;
-    set[way].dirty = 0;
-    set[way].tag = tag;
+    accessDRAM(address-offset, tempBlock, MODE_READ);
+
+    if (set[iset].valid && set[iset].dirty) {
+      address = (set[iset].tag * L2_SIZE/L2_ASSOCIATIVITY) + (index * BLOCK_SIZE);
+      accessDRAM(address, set[iset].data, MODE_WRITE);
+    }
+
+    memcpy(set[iset].data, tempBlock, BLOCK_SIZE);
+    set[iset].valid = time;
+    set[iset].dirty = 0;
+    set[iset].tag = tag;
   }
 
   if (mode == MODE_READ) {
-    memcpy(data, (set[way].data+offset), WORD_SIZE);
+    memcpy(data, set[iset].data, BLOCK_SIZE);
     time += L2_READ_TIME;
     return;
   }
 
   if (mode == MODE_WRITE) {
-    memcpy((set[way].data+offset), data, WORD_SIZE);
+    memcpy(set[iset].data, data, BLOCK_SIZE);
     time += L2_WRITE_TIME;
-    set[way].dirty = 1;
+    set[iset].dirty = 1;
     return;
   }
 }
@@ -134,7 +120,7 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   }
   
   uint32_t offset = (address % BLOCK_SIZE);
-  uint32_t index = (address / BLOCK_SIZE) % (L1_LINE_COUNT);
+  uint32_t index = (address / BLOCK_SIZE) % L1_LINE_COUNT;
   uint32_t tag = (address / L1_SIZE);
 
   CacheLine* line = cacheL1.lines + index;
@@ -144,9 +130,9 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
     uint8_t tempBlock[BLOCK_SIZE];
 
     accessL2(address, tempBlock, MODE_READ);
-
-    if ((line->valid) && (line->dirty)) {
-      accessL2(address, (line->data+offset), MODE_WRITE);
+    
+    if (line->valid && line->dirty) {
+      accessL2((line->tag * L1_SIZE) + (index * BLOCK_SIZE), line->data, MODE_WRITE);
     }
 
     memcpy(line->data, tempBlock, BLOCK_SIZE);
@@ -175,3 +161,32 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
 void resetTime() { time = 0; }
 
 uint32_t getTime() { return time; }
+
+
+/* ---- Debugging ---- */
+
+void printL1() {
+  CacheLine* lines = cacheL1.lines;
+
+  printf("L1\n");
+
+  for (int i = 0; i < L1_LINE_COUNT; i++) {
+    if (lines[i].valid) {
+      printf("Addre: %d\n", (lines[i].tag * L1_SIZE + i * BLOCK_SIZE));
+      printf("Value: %u\n", (unsigned int) *lines[i].data);
+    }
+  }
+}
+
+void printL2() {
+  CacheLine* lines = cacheL2.lines;
+
+  printf("L2\n");
+
+  for (int i = 0; i < L2_LINE_COUNT; i++) {
+    if (lines[i].valid) {
+      printf("Addre: %d\n", (lines[i].tag * L2_SIZE + i * BLOCK_SIZE/L2_ASSOCIATIVITY));
+      printf("Value: %u\n", (unsigned int) *lines[i].data);
+    }
+  }
+}

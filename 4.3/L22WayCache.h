@@ -22,8 +22,8 @@ void accessL1(uint32_t, uint8_t *, uint32_t);
 
 typedef struct CacheLine {
   uint8_t data[BLOCK_SIZE];
-  uint8_t valid;
   uint8_t dirty;
+  uint32_t valid;
   uint32_t tag;
 } CacheLine;
 
@@ -37,5 +37,9 @@ typedef struct Cache {
 void read(uint32_t, uint8_t *);
 
 void write(uint32_t, uint8_t *);
+
+void printL1();
+
+void printL2();
 
 #endif
