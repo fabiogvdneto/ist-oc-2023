@@ -25,8 +25,7 @@ int main() {
       read(i, (unsigned char *)(&value));
       clock1 = getTime();
       printf("Read; Address %d; Value %d; Time %d\n", i, value, clock1);
-    }  
-
+    }
   }
 
   printf("\nRandom accesses\n");
