@@ -24,18 +24,18 @@ int main() {
   uint8_t* pval3 = (uint8_t*) &val3;
 
   write(addr1, pval1);
-  printf("write\t%d\t%u\t%d\n", addr1, val1, getTime());
+  printf("write\t%d\t%u\t%d\n", addr1, val1, getTime()); // 101
   write(addr2, pval2);
-  printf("write\t%d\t%u\t%d\n", addr2, val2, getTime());
+  printf("write\t%d\t%u\t%d\n", addr2, val2, getTime()); // 102
   write(addr3, pval3);
-  printf("write\t%d\t%u\t%d\n", addr3, val3, getTime());
+  printf("write\t%d\t%u\t%d\n", addr3, val3, getTime()); // 103
 
   read(addr1, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr1, value, getTime());
+  printf("read\t%d\t%u\t%d\n", addr1, value, getTime()); // 104
   read(addr2, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr2, value, getTime());
+  printf("read\t%d\t%u\t%d\n", addr2, value, getTime()); // 105
   read(addr3, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr3, value, getTime());
+  printf("read\t%d\t%u\t%d\n", addr3, value, getTime()); // 106
 
   // SECOND ROUND: same as first round, but different index this time.
 
@@ -44,18 +44,21 @@ int main() {
   addr3 = 0x20C;
 
   write(addr1, pval1);
-  printf("write\t%d\t%u\t%d\n", addr1, val1, getTime());
+  printf("write\t%d\t%u\t%d\n", addr1, val1, getTime()); // 207
   write(addr2, pval2);
-  printf("write\t%d\t%u\t%d\n", addr2, val2, getTime());
+  printf("write\t%d\t%u\t%d\n", addr2, val2, getTime()); // 208
   write(addr3, pval3);
-  printf("write\t%d\t%u\t%d\n", addr3, val3, getTime());
+  printf("write\t%d\t%u\t%d\n", addr3, val3, getTime()); // 209
 
   read(addr1, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr1, value, getTime());
+  printf("read\t%d\t%u\t%d\n", addr1, value, getTime()); // 210
   read(addr2, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr2, value, getTime());
+  printf("read\t%d\t%u\t%d\n", addr2, value, getTime()); // 211
   read(addr3, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr3, value, getTime());
+  printf("read\t%d\t%u\t%d\n", addr3, value, getTime()); // 212
+
+  printf("\nMODE\tADDR\tVALUE\tTIME\n");
+  resetTime();
 
   // THIRD ROUND: conflicts (same index, different tag).
 
@@ -64,7 +67,7 @@ int main() {
   addr3 = 0xC000;
 
   write(addr1, pval1);
-  printf("write\t%d\t%u\t%d\n", addr1, val1, getTime());
+  printf("write\t%d\t%u\t%d\n", addr1, val1, getTime()); // 313
   write(addr2, pval2);
   printf("write\t%d\t%u\t%d\n", addr2, val2, getTime());
   write(addr3, pval3);
