@@ -22,5 +22,7 @@ diff3:
 	diff tests/4.3.out tests/results_L2_2W.txt
 
 clean:
-	rm $(TARGET)
-	rm *.out
+	rm tests/L1Cache
+	rm tests/L2Cache
+	rm tests/L22WayCache
+	rm tests/*.out
