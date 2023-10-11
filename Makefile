@@ -36,5 +36,5 @@ clean:
 	rm tests/L1Cache
 	rm tests/L2Cache
 	rm tests/L22WayCache
-	rm tests/test*
+	rm tests/test1 tests/test2 tests/test3
 	rm tests/*.out
