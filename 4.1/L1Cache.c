@@ -3,6 +3,7 @@
 Cache L1Cache;
 uint8_t DRAM[DRAM_SIZE];
 uint32_t time;
+uint8_t debug = 0;
 
 /**************** Helper functions ****************/
 
@@ -64,9 +65,13 @@ void accessL1(uint32_t address, uint8_t *data, uint32_t mode) {
   if (!lines->valid || lines->tag != tag) {
     uint8_t tempBlock[BLOCK_SIZE];
 
+    if (debug) printf("L1 MISS\n");
+
     accessDRAM((address-offset), tempBlock, MODE_READ);
 
     if ((lines->valid) && (lines->dirty)) {
+      if (debug) printf("L1 DIRTY\n");
+
       accessDRAM((lines->tag * L1_SIZE) + (index * BLOCK_SIZE), lines->data, MODE_WRITE);
     }
 

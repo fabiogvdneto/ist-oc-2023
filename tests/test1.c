@@ -13,18 +13,15 @@ int main() {
   uint32_t val1 = 11;
   uint32_t val2 = 22;
   uint32_t val3 = 33;
-  uint32_t val4 = 44;
 
   uint32_t addr1 = 0x104;
   uint32_t addr2 = 0x108;
   uint32_t addr3 = 0x10C;
-  uint32_t addr4;
 
   uint8_t* pvalue = (uint8_t*) &value;
   uint8_t* pval1 = (uint8_t*) &val1;
   uint8_t* pval2 = (uint8_t*) &val2;
   uint8_t* pval3 = (uint8_t*) &val3;
-  uint8_t* pval4 = (uint8_t*) &val4;
 
   write(addr1, pval1);
   printf("write\t%d\t%u\t%d\n", addr1, val1, getTime());
@@ -62,10 +59,9 @@ int main() {
 
   // THIRD ROUND: conflicts (same index, different tag).
 
-  addr1 = 0x10000;
-  addr2 = 0x20000;
-  addr3 = 0x30000;
-  addr4 = 0x40000;
+  addr1 = 0x4000;
+  addr2 = 0x8000;
+  addr3 = 0xC000;
 
   write(addr1, pval1);
   printf("write\t%d\t%u\t%d\n", addr1, val1, getTime());
@@ -73,17 +69,15 @@ int main() {
   printf("write\t%d\t%u\t%d\n", addr2, val2, getTime());
   write(addr3, pval3);
   printf("write\t%d\t%u\t%d\n", addr3, val3, getTime());
-  write(addr4, pval4);
-  printf("write\t%d\t%u\t%d\n", addr4, val4, getTime());
 
   read(addr1, pvalue);
   printf("read\t%d\t%u\t%d\n", addr1, value, getTime());
-  read(addr1, pvalue);
+  read(addr2, pvalue);
   printf("read\t%d\t%u\t%d\n", addr2, value, getTime());
-  read(addr1, pvalue);
+  read(addr3, pvalue);
   printf("read\t%d\t%u\t%d\n", addr3, value, getTime());
-  read(addr1, pvalue);
-  printf("read\t%d\t%u\t%d\n", addr4, value, getTime());
+  read(addr3, pvalue);
+  printf("read\t%d\t%u\t%d\n", addr3, value, getTime());
 
   return 0;
 }
