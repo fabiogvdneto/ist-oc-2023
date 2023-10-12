@@ -110,12 +110,13 @@ void accessL2(uint32_t address, uint8_t *data, uint32_t mode) {
     }
 
     memcpy(set[iset].data, tempBlock, BLOCK_SIZE);
-    set[iset].valid = time;
     set[iset].dirty = 0;
     set[iset].tag = tag;
   }
 
   if (DEBUG) printf(" ] ");
+
+  set[iset].valid = time;
 
   if (mode == MODE_READ) {
     memcpy(data, set[iset].data, BLOCK_SIZE);
